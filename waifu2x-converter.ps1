@@ -1,14 +1,19 @@
 Add-Type -AssemblyName PresentationFramework
 Add-Type -AssemblyName WindowsFormsIntegration
 
-<#
-function SelectPath() {
-    $PathOpenFileDialog = New-Object System.Windows.Forms.OpenFileDialog
-    $PathOpenFileDialog.InitialDirectory = $DefaultPath
-    $PathOpenFileDialog.ShowDialog() | Out-Null
-    $PathOpenFileDialog.FileName
+function OpenFile() {
+    $OpenFileDialog = New-Object System.Windows.Forms.OpenFileDialog
+    $OpenFileDialog.InitialDirectory = $DefaultPath
+    [void]$OpenFileDialog.ShowDialog()
+    $OpenFileDialog.FileName
 }
-#>
+
+function SaveFile() {
+    $SaveFileDialog = New-Object System.Windows.Forms.SaveFileDialog
+    $SaveFileDialog.InitialDirectory = $DefaultPath
+    [void]$SaveFileDialog.ShowDialog()
+    $SaveFileDialog.FileName
+}
 
 function Engine($InputFile, $OutputFile, $Mode, $NoiseLevel, $ScaleRatio, $BlockSize) {
     $ModeArray = "noise_scale", "noise", "scale"
@@ -50,7 +55,6 @@ $InputTextBox = New-Object Windows.Controls.TextBox
 $InputTextBox.SetValue([Windows.Controls.Grid]::RowProperty, 0)
 $InputTextBox.HorizontalAlignment = "Stretch"
 $InputTextBox.Margin = "90,10,90,0"
-$InputTextBox.Text = "test.jpg"
 $MainGrid.AddChild($InputTextBox)
 
 $InputButton = New-Object Windows.Controls.Button
@@ -60,9 +64,10 @@ $InputButton.Margin = "0,10,10,0"
 $InputButton.Content = "Browse"
 $InputButton.Width = 70
 $InputButton.Add_Click({
-    $Path = SelectPath
+    $Path = OpenFile
     if ($Path -ne "") {
         $InputTextBox.Text = $Path
+        $OutputTextBox.Text = ([io.fileinfo]$Path).DirectoryName + "\" + ([io.fileinfo]$Path).BaseName + "_out.png"
     }
 })
 $MainGrid.AddChild($InputButton)
@@ -78,7 +83,6 @@ $OutputTextBox = New-Object Windows.Controls.TextBox
 $OutputTextBox.SetValue([Windows.Controls.Grid]::RowProperty, 1)
 $OutputTextBox.HorizontalAlignment = "Stretch"
 $OutputTextBox.Margin = "90,10,90,0"
-$OutputTextBox.Text = "out.webp"
 $MainGrid.AddChild($OutputTextBox)
 
 $OutputButton = New-Object Windows.Controls.Button
@@ -88,7 +92,7 @@ $OutputButton.Margin = "0,10,10,0"
 $OutputButton.Content = "Browse"
 $OutputButton.Width = 70
 $OutputButton.Add_Click({
-    $Path = SelectPath
+    $Path = SaveFile
     if ($Path -ne "") {
         $OutputTextBox.Text = $Path
     }
@@ -154,7 +158,7 @@ $BlockSizeLabel = New-Object Windows.Controls.Label
 $BlockSizeLabel.SetValue([Windows.Controls.Grid]::RowProperty, 2)
 $BlockSizeLabel.HorizontalAlignment = "Left"
 $BlockSizeLabel.Margin = "350,6,0,0"
-$BlockSizeLabel.Content = "Scale Ratio"
+$BlockSizeLabel.Content = "Block Size"
 $MainGrid.AddChild($BlockSizeLabel)
 
 $BlockSizeComboBox = New-Object Windows.Controls.ComboBox
